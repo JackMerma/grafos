@@ -1,3 +1,5 @@
+package Grafos;
+
 public class Grafo<E extends Comparable<E>>{
     /**
      * Clase Item -> realizar operaciones
@@ -9,15 +11,29 @@ public class Grafo<E extends Comparable<E>>{
         private int order;
         private boolean visited;
 
-        private Node(E data){
+        private Node(E data, Node father, Node next, boolean visi, int order){
             this.data = data;
+            this.visited=visi;
+            this.father = father;
+            this.next=next;
+            this.order=order;
+        }
+
+        private Node(E data){
+        	this(data, null, null, false, 0);
+        }
+        
+        public String toString() {
+        	String fa = (this.father==null)?"-":father.data.toString();
+        	return data.toString()+"\t"+fa+"\t"+this.order;
         }
     }
     
     class Cola{
     	private Node root;
     	private Node last;
-    	
+    
+    	/*
     	private void encolar(E data) {
     		if(this.root==null) {
     			root=last=new Node(data);
@@ -26,6 +42,17 @@ public class Grafo<E extends Comparable<E>>{
     			last.next=aux;
     			last = aux;
     		}
+    	}
+    	*/
+    	
+    	private void encolar(Node node) {
+    		if(this.root==null)
+    			this.root = last = node;
+    		else {
+    			last.next = node;
+    			last=node;
+    		}
+    			
     	}
     	
     	private Node desencolar() {
@@ -39,6 +66,17 @@ public class Grafo<E extends Comparable<E>>{
     		}
     		return aux;
     	}
+    	
+    	private boolean isEmpty() {
+    		return this.root==null;
+    	}
+    	
+    	private Node search(E data) {
+    		Node aux = this.root;
+    		while(aux!=null&&aux.data!=data)
+    			aux=aux.next;
+    		return aux;
+    	}
     }
     
     private Integer inf = Integer.MAX_VALUE;
@@ -46,7 +84,7 @@ public class Grafo<E extends Comparable<E>>{
     private E[] list;
     private int[][] listAdya;
     private Cola bfsList, dfsList;//resultado final
-    private Cola listQueue;//donde se encola BFS o DFS
+    private Cola listAuxiliar;//donde se encola BFS o DFS
     
     public Grafo(int n) {
     	list = (E[]) new Comparable [n];//para recuperar las posiciones
@@ -126,37 +164,79 @@ public class Grafo<E extends Comparable<E>>{
     }
     
     //BSF
-    public void BSF(E data) {
+    public void BFS(E data) {
     	int posAbs = this.capturePos(data); //ya se puede trabajar con la adyacente
     	
-    	Node dataAux;
     	if(this.list[posAbs]!=null) {
-    		//this.bfsList = new Node(this.list[posAbs]);//se crea el nodo con datos vacios(ademas del dato neto)
-    		//this.BSF(bfsList, 0, 0, posAbs);
+    		this.bfsList = new Cola();
+    		//primero
+    		Node aux = new Node(data, null, null, true, 0);
+    		
+    		this.bfsList.encolar(aux);
+    		this.listAuxiliar = new Cola();
+    		
+    		this.BFS(aux, posAbs);
     	}else {
     		System.out.println("No se puede hacer BSF desde un dato que no existe.");
     	}
-    		
-    	
     }
     
-    private boolean BSF(Node actual, int orden, int nodosRecorridos, int posNodo) {
+    private void BFS(Node actual, int pos) {
+    	E data = actual.data;
     	
+    	for(int i=0;i<this.total;i++) {
+    		if(this.listAdya[pos][i]!=inf&&pos!=i) {
+    			//existe relacion con otro nodo
+    			E dataRelac = this.list[i];//se recupera la pos, y el dato en List
+
+    			if(listAuxiliar.search(dataRelac)==null&&bfsList.search(dataRelac)==null){//se verifica en ambos
+    				Node aux = new Node(dataRelac, actual, null, true, actual.order+1);
+    				this.listAuxiliar.encolar(aux);
+    				this.bfsList.encolar(aux);
+    			}
+    		}
+    	}
+    	
+    	//se desencola en orden
+    	while(!listAuxiliar.isEmpty()) {
+    		Node aux = listAuxiliar.desencolar();
+    		if(aux!=null) {
+    			int posNode = this.capturePos(aux.data);
+    			this.BFS(aux, posNode);
+    		}
+    	}
+    }
+    
+    public void BFStable() {
+    	Node aux = this.bfsList.root;
+    	while(aux!=null) {
+    		System.out.println(aux);
+    		aux = aux.next;
+    	}
     }
     
     public static void main(String args[]) {
-    	Grafo<String> grafo = new Grafo<String>(3);
+    	Grafo<String> grafo = new Grafo<String>(8);
     	grafo.insert("A");
     	grafo.insert("B");
     	grafo.insert("C");
+    	grafo.insert("D");
+    	grafo.insert("E");
+    	grafo.insert("F");
+    	grafo.insert("G");
+    	grafo.insert("H");
     	
-    	grafo.relation("A", "C");
-    	grafo.relation("B", "A", 5);
-    	grafo.relation("A", "B", 8);
-    	System.out.println(grafo.listaAdyacencia());
-    	
-    	
-    	
+    	grafo.relation("A", "B");
+    	grafo.relation("A", "D");
+    	grafo.relation("B", "D");
+    	grafo.relation("E", "D");
+    	grafo.relation("B", "C");
+    	grafo.relation("F", "D");
+    	grafo.relation("C", "H");
+    	grafo.relation("F", "H");
+    	grafo.relation("F", "G");
+    	System.out.println(grafo.listaAdyacencia()+"\n");
+    	grafo.BFS("A");
+    	grafo.BFStable();
     }
-    
 }
