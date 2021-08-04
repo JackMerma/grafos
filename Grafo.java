@@ -1,5 +1,3 @@
-package Grafos;
-
 public class Grafo<E extends Comparable<E>>{
     /**
      * Clase Item -> realizar operaciones
@@ -19,10 +17,6 @@ public class Grafo<E extends Comparable<E>>{
             this.order=order;
         }
 
-        private Node(E data){
-        	this(data, null, null, false, 0);
-        }
-        
         public String toString() {
         	String fa = (this.father==null)?"-":father.data.toString();
         	return data.toString()+"\t"+fa+"\t"+this.order;
@@ -165,7 +159,7 @@ public class Grafo<E extends Comparable<E>>{
     
     //BSF
     public void BFS(E data) {
-    	int posAbs = this.capturePos(data); //ya se puede trabajar con la adyacente
+    	int posAbs = this.capturePos(data);
     	
     	if(this.list[posAbs]!=null) {
     		this.bfsList = new Cola();
@@ -182,8 +176,6 @@ public class Grafo<E extends Comparable<E>>{
     }
     
     private void BFS(Node actual, int pos) {
-    	E data = actual.data;
-    	
     	for(int i=0;i<this.total;i++) {
     		if(this.listAdya[pos][i]!=inf&&pos!=i) {
     			//existe relacion con otro nodo
@@ -208,7 +200,47 @@ public class Grafo<E extends Comparable<E>>{
     }
     
     public void BFStable() {
-    	Node aux = this.bfsList.root;
+    	this.tableRecorridos(this.bfsList);
+    }
+    
+    public void DFS(E data) {
+    	int posAbs = this.capturePos(data);
+    	
+    	if(this.list[posAbs]!=null) {
+    		this.dfsList = new Cola();
+    		//primero
+    		Node aux = new Node(data, null, null, true, 0);
+    		
+    		this.dfsList.encolar(aux);
+    		this.listAuxiliar = new Cola();
+    		
+    		this.DFS(aux, posAbs);
+    	}else {
+    		System.out.println("No se puede hacer BSF desde un dato que no existe.");
+    	}
+    }
+    
+    private void DFS(Node actual, int pos) {
+    	for(int i=0;i<this.total;i++) {
+    		if(this.listAdya[pos][i]!=inf&&pos!=i) {
+    			//existe relacion con otro nodo
+    			E dataRelac = this.list[i];//se recupera la pos, y el dato en List
+
+    			if(listAuxiliar.search(dataRelac)==null&&dfsList.search(dataRelac)==null){//se verifica en ambos
+    				Node aux = new Node(dataRelac, actual, null, true, actual.order+1);
+    				this.dfsList.encolar(aux);
+    				this.DFS(aux, i);
+    			}
+    		}
+    	}
+    }
+    
+    public void DFStable() {
+    	this.tableRecorridos(this.dfsList);
+    }
+    
+    public void tableRecorridos(Cola x) {
+    	Node aux = x.root;
     	while(aux!=null) {
     		System.out.println(aux);
     		aux = aux.next;
@@ -237,6 +269,8 @@ public class Grafo<E extends Comparable<E>>{
     	grafo.relation("F", "G");
     	System.out.println(grafo.listaAdyacencia()+"\n");
     	grafo.BFS("A");
-    	grafo.BFStable();
+    	grafo.DFS("A");
+    	//grafo.BFStable();
+    	grafo.DFStable();
     }
 }
