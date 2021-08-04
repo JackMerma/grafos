@@ -20,7 +20,7 @@ public class Grafo<E extends Comparable<E>>{
     private Item bfsList, dfsList;
     
     public Grafo(int n) {
-    	list = (E[]) new Object [n];//para recuperar las posiciones
+    	list = (E[]) new Comparable [n];//para recuperar las posiciones
     	listAdya = new int [n][n]; //lista de adyacencia con pesos
     	total=n;
     	
@@ -73,6 +73,35 @@ public class Grafo<E extends Comparable<E>>{
     			return i;
     	}
     	return -1;
+    }
+    
+    public String listaAdyacencia() {
+    	String result="";
+    	
+    	for(int i=0;i<this.total;i++) {
+    		for(int u=0;u<this.total;u++) {
+    			result+=((this.listAdya[i][u]==inf)?"inf":this.listAdya[i][u])+"\t";
+    		}
+    		result+="\n";
+    	}
+    	
+    	return result;
+    }
+    
+    
+    public static void main(String args[]) {
+    	Grafo<String> grafo = new Grafo<String>(3);
+    	grafo.insert("A");
+    	grafo.insert("B");
+    	grafo.insert("C");
+    	grafo.insert("W");
+    	
+    	grafo.relation("A", "C");
+    	grafo.relation("B", "A", 5);
+    	System.out.println(grafo.listaAdyacencia());
+    	
+    	
+    	
     }
     
 }
