@@ -7,11 +7,9 @@ public class Grafo<E extends Comparable<E>>{
         private Node father;
         private Node next;
         private int order;
-        private boolean visited;
 
-        private Node(E data, Node father, Node next, boolean visi, int order){
+        private Node(E data, Node father, Node next, int order){
             this.data = data;
-            this.visited=visi;
             this.father = father;
             this.next=next;
             this.order=order;
@@ -26,19 +24,7 @@ public class Grafo<E extends Comparable<E>>{
     class Cola{
     	private Node root;
     	private Node last;
-    
-    	/*
-    	private void encolar(E data) {
-    		if(this.root==null) {
-    			root=last=new Node(data);
-    		}else {
-    			Node aux = new Node(data);
-    			last.next=aux;
-    			last = aux;
-    		}
-    	}
-    	*/
-    	
+
     	private void encolar(Node node) {
     		if(this.root==null)
     			this.root = last = node;
@@ -73,12 +59,12 @@ public class Grafo<E extends Comparable<E>>{
     	}
     }
     
-    private Integer inf = Integer.MAX_VALUE;
+    private static Integer inf = Integer.MAX_VALUE;
     private int cant=0, total;
     private E[] list;
     private int[][] listAdya;
     private Cola bfsList, dfsList;//resultado final
-    private Cola listAuxiliar;//donde se encola BFS o DFS
+    private Cola listAuxiliar;//auxiliar para BFS
     
     public Grafo(int n) {
     	list = (E[]) new Comparable [n];//para recuperar las posiciones
@@ -164,7 +150,7 @@ public class Grafo<E extends Comparable<E>>{
     	if(this.list[posAbs]!=null) {
     		this.bfsList = new Cola();
     		//primero
-    		Node aux = new Node(data, null, null, true, 0);
+    		Node aux = new Node(data, null, null, 0);
     		
     		this.bfsList.encolar(aux);
     		this.listAuxiliar = new Cola();
@@ -182,7 +168,7 @@ public class Grafo<E extends Comparable<E>>{
     			E dataRelac = this.list[i];//se recupera la pos, y el dato en List
 
     			if(listAuxiliar.search(dataRelac)==null&&bfsList.search(dataRelac)==null){//se verifica en ambos
-    				Node aux = new Node(dataRelac, actual, null, true, actual.order+1);
+    				Node aux = new Node(dataRelac, actual, null, actual.order+1);
     				this.listAuxiliar.encolar(aux);
     				this.bfsList.encolar(aux);
     			}
@@ -203,20 +189,19 @@ public class Grafo<E extends Comparable<E>>{
     	this.tableRecorridos(this.bfsList);
     }
     
+    //DSF
     public void DFS(E data) {
     	int posAbs = this.capturePos(data);
     	
     	if(this.list[posAbs]!=null) {
     		this.dfsList = new Cola();
     		//primero
-    		Node aux = new Node(data, null, null, true, 0);
+    		Node aux = new Node(data, null, null, 0);
     		
     		this.dfsList.encolar(aux);
-    		this.listAuxiliar = new Cola();
-    		
     		this.DFS(aux, posAbs);
     	}else {
-    		System.out.println("No se puede hacer BSF desde un dato que no existe.");
+    		System.out.println("No se puede hacer DSF desde un dato que no existe.");
     	}
     }
     
@@ -226,8 +211,8 @@ public class Grafo<E extends Comparable<E>>{
     			//existe relacion con otro nodo
     			E dataRelac = this.list[i];//se recupera la pos, y el dato en List
 
-    			if(listAuxiliar.search(dataRelac)==null&&dfsList.search(dataRelac)==null){//se verifica en ambos
-    				Node aux = new Node(dataRelac, actual, null, true, actual.order+1);
+    			if(dfsList.search(dataRelac)==null){//se verifica solo en dfsList 
+    				Node aux = new Node(dataRelac, actual, null,actual.order+1);
     				this.dfsList.encolar(aux);
     				this.DFS(aux, i);
     			}
@@ -247,6 +232,37 @@ public class Grafo<E extends Comparable<E>>{
     	}
     }
     
+    public static boolean grafoIncluido(Grafo a, Grafo b) {
+    	int [][]listAdyaA = a.listAdya, listAdyaB = b.listAdya;
+    	Comparable []listA = a.list, listB = b.list;
+
+    	//determina que grafo tiene menor nodos
+    	//se recorre todos los datos de A
+    	for(int i=0;i<a.cant;i++) {
+    		//se verifica que el dato en (i) exista en el otro grafo
+
+    		int posDataB1 = b.capturePos(listA[i]);
+
+    		if(posDataB1==-1)//no existe
+    			return false;
+
+    		//se verifica las relaciones del nodo A con las del nodo B
+    		for(int u=0;u<a.cant;u++) {
+    			if(listAdyaA[i][u]!=inf) {//existe la arista de dos datos de un nodo del grafo 1
+    				int posDataB2 = b.capturePos(listA[u]);
+    				if(posDataB2==-1) {// el otro dato no existe
+    					return false;
+    				}else {
+    					if(listAdyaB[posDataB1][posDataB2]==inf)//existen ambos datos pero no la arista
+    						return false;
+    				}
+    			}
+    		}
+    	}
+
+    	return true;
+    }
+
     public static void main(String args[]) {
     	Grafo<String> grafo = new Grafo<String>(8);
     	grafo.insert("A");
@@ -257,7 +273,7 @@ public class Grafo<E extends Comparable<E>>{
     	grafo.insert("F");
     	grafo.insert("G");
     	grafo.insert("H");
-    	
+
     	grafo.relation("A", "B");
     	grafo.relation("A", "D");
     	grafo.relation("B", "D");
@@ -272,5 +288,25 @@ public class Grafo<E extends Comparable<E>>{
     	grafo.DFS("A");
     	//grafo.BFStable();
     	grafo.DFStable();
+    	
+    	
+    	Grafo<Character> g1=new Grafo<Character>(4), g2=new Grafo<Character>(3);
+    	
+    	g1.insert('B');
+    	g1.insert('C');
+    	g1.insert('D');
+    	
+    	g1.relation('C', 'B');
+    	g1.relation('C', 'D');
+    	g1.relation('B', 'D');
+    	
+    	
+    	g2.insert('A');
+    	g2.insert('B');
+    	g2.insert('D');
+    	g2.relation('B', 'D');
+    	System.out.println(g2.listaAdyacencia()+"\n");
+    	
+    	System.out.println(Grafo.grafoIncluido(g2, g1));
     }
 }
