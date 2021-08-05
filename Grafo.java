@@ -1,6 +1,12 @@
+/**
+ * 	Esta clase crea un tipo de grafo dirigido y no dirigido, con metodos BFS y DFS
+ * 
+ *	@author Jackson Fernando Merma Portocarrero
+ *	
+ */
 public class Grafo<E extends Comparable<E>>{
     /**
-     * Clase Item -> realizar operaciones
+     * Clase Node
      */
     class Node{
         private E data;
@@ -8,6 +14,13 @@ public class Grafo<E extends Comparable<E>>{
         private Node next;
         private int order;
 
+        /**
+         * 
+         * @param data dato a almacenar en el nodo
+         * @param father padre del nodo (solo se usa para almacenamiento)
+         * @param next siguiente nodo (se usa para enlazar estructura)
+         * @param order orden segun el uso de BFS o DFS
+         */
         private Node(E data, Node father, Node next, int order){
             this.data = data;
             this.father = father;
@@ -21,10 +34,17 @@ public class Grafo<E extends Comparable<E>>{
         }
     }
     
+    /*
+     * Clase Cola
+     */
     class Cola{
     	private Node root;
     	private Node last;
-
+    	
+    	/**
+    	 * 
+    	 * @param node nodo a encolar
+    	 */
     	private void encolar(Node node) {
     		if(this.root==null)
     			this.root = last = node;
@@ -35,6 +55,10 @@ public class Grafo<E extends Comparable<E>>{
     			
     	}
     	
+    	/**
+    	 * 
+    	 * @return el primer nodo
+    	 */
     	private Node desencolar() {
     		Node aux=null;
     		if(this.root!=null) {
@@ -47,10 +71,19 @@ public class Grafo<E extends Comparable<E>>{
     		return aux;
     	}
     	
+    	/**
+    	 * 
+    	 * @return cola esta vacia
+    	 */
     	private boolean isEmpty() {
     		return this.root==null;
     	}
     	
+    	/**
+    	 * 
+    	 * @param data dato a buscar
+    	 * @return Nodo que guada dicho dato
+    	 */
     	private Node search(E data) {
     		Node aux = this.root;
     		while(aux!=null&&aux.data!=data)
@@ -66,6 +99,10 @@ public class Grafo<E extends Comparable<E>>{
     private Cola bfsList, dfsList;//resultado final
     private Cola listAuxiliar;//auxiliar para BFS
     
+    /**
+     * 
+     * @param n cantidad de elementos
+     */
     public Grafo(int n) {
     	list = (E[]) new Comparable [n];//para recuperar las posiciones
     	listAdya = new int [n][n]; //lista de adyacencia con pesos
@@ -79,11 +116,19 @@ public class Grafo<E extends Comparable<E>>{
     		for(int u=0;u<total;u++)
     			listAdya[i][u]=inf;
     }
-    
+   
+    /**
+     * 
+     * @return grafo lleno
+     */
     public boolean isFull() {
     	return cant == total;
     }
     
+    /**
+     * 
+     * @param data dato a insertar
+     */
     public void insert(E data) {
     	if(this.isFull()) {
     		System.out.println("Esta lleno");
@@ -93,14 +138,32 @@ public class Grafo<E extends Comparable<E>>{
     	}
     }
     
+    /**
+     * 
+     * @param a primer elemento a relacionar
+     * @param b segundo elemento relacionado
+     */
     public void relation(E a, E b) {//sin peso
     	this.relation(a, b, 1, true);//si tienes peso para ambas direcciones
     }
     
+    /**
+     * 
+     * @param a primer elemento a relacionar
+     * @param b segundo elemento relacionado
+     * @param peso coste
+     */
     public void relation(E a, E b, int peso) {
     	this.relation(a, b, peso, false);//no tienen peso para mabas direcciones
     }
 
+    /**
+     * 
+     * @param a primer elemento a relacionar
+     * @param b segundo elemento relacionado
+     * @param peso coste
+     * @param ambos relacionar ambos (no dirigido) o no
+     */
     private void relation(E a, E b, int peso, boolean ambos) {
     	 int posA, posB;
     	 posA=capturePos(a);
@@ -116,6 +179,12 @@ public class Grafo<E extends Comparable<E>>{
     			 this.listAdya[posB][posA]=peso;
     	 }
     }
+    
+    /**
+     * 
+     * @param data dato a buscar
+     * @return posicion del dato
+     */
     private int capturePos(E data) {
     	//se busca en list
     	for(int i=0;i<this.cant;i++) {
@@ -125,8 +194,12 @@ public class Grafo<E extends Comparable<E>>{
     	return -1;
     }
     
+    /**
+     * 
+     * @return matriz con relaciones entre elementos
+     */
     public String listaAdyacencia() {
-    	String result="\t";
+    	String result="\nLista de Adyacencia\n\t";
     	
     	for(int i=0;i<this.total;i++)
     		result+=this.list[i]+"\t";
@@ -143,7 +216,10 @@ public class Grafo<E extends Comparable<E>>{
     	return result;
     }
     
-    //BSF
+    /**
+     * 
+     * @param data dato desde donde se empezara el BFS
+     */
     public void BFS(E data) {
     	int posAbs = this.capturePos(data);
     	
@@ -157,10 +233,15 @@ public class Grafo<E extends Comparable<E>>{
     		
     		this.BFS(aux, posAbs);
     	}else {
-    		System.out.println("No se puede hacer BSF desde un dato que no existe.");
+    		System.out.println("No se puede hacer BFS desde un dato que no existe.");
     	}
     }
     
+    /**
+     * 
+     * @param actual nodo actual
+     * @param pos posicion dentro de List de dicho nodo
+     */
     private void BFS(Node actual, int pos) {
     	for(int i=0;i<this.total;i++) {
     		if(this.listAdya[pos][i]!=inf&&pos!=i) {
@@ -186,10 +267,14 @@ public class Grafo<E extends Comparable<E>>{
     }
     
     public void BFStable() {
+    	System.out.println("\nBFS");
     	this.tableRecorridos(this.bfsList);
     }
     
-    //DSF
+    /**
+     * 
+     * @param data dato desde donde se empezara el DFS
+     */
     public void DFS(E data) {
     	int posAbs = this.capturePos(data);
     	
@@ -205,6 +290,11 @@ public class Grafo<E extends Comparable<E>>{
     	}
     }
     
+    /**
+     * 
+     * @param actual nodo actual
+     * @param pos posicion dentro de List de dicho nodo
+     */
     private void DFS(Node actual, int pos) {
     	for(int i=0;i<this.total;i++) {
     		if(this.listAdya[pos][i]!=inf&&pos!=i) {
@@ -221,9 +311,14 @@ public class Grafo<E extends Comparable<E>>{
     }
     
     public void DFStable() {
+    	System.out.println("\nDFS");
     	this.tableRecorridos(this.dfsList);
     }
     
+    /**
+     * 
+     * @param x Cola a listar
+     */
     public void tableRecorridos(Cola x) {
     	Node aux = x.root;
     	while(aux!=null) {
@@ -231,13 +326,19 @@ public class Grafo<E extends Comparable<E>>{
     		aux = aux.next;
     	}
     }
-    
+
+    /**
+     * 
+     * @param a grafo que incluye a b
+     * @param b grafo incluido en a
+     * @return si el grafo a incluye al b
+     */
     public static boolean grafoIncluido(Grafo a, Grafo b) {
     	int [][]listAdyaA = a.listAdya, listAdyaB = b.listAdya;
     	Comparable []listA = a.list, listB = b.list;
 
     	//determina que grafo tiene menor nodos
-    	//se recorre todos los datos de A
+    	//se recorre todos los Datos incorrectosdatos de A
     	for(int i=0;i<a.cant;i++) {
     		//se verifica que el dato en (i) exista en el otro grafo
 
@@ -259,54 +360,6 @@ public class Grafo<E extends Comparable<E>>{
     			}
     		}
     	}
-
     	return true;
-    }
-
-    public static void main(String args[]) {
-    	Grafo<String> grafo = new Grafo<String>(8);
-    	grafo.insert("A");
-    	grafo.insert("B");
-    	grafo.insert("C");
-    	grafo.insert("D");
-    	grafo.insert("E");
-    	grafo.insert("F");
-    	grafo.insert("G");
-    	grafo.insert("H");
-
-    	grafo.relation("A", "B");
-    	grafo.relation("A", "D");
-    	grafo.relation("B", "D");
-    	grafo.relation("E", "D");
-    	grafo.relation("B", "C");
-    	grafo.relation("F", "D");
-    	grafo.relation("C", "H");
-    	grafo.relation("F", "H");
-    	grafo.relation("F", "G");
-    	System.out.println(grafo.listaAdyacencia()+"\n");
-    	grafo.BFS("A");
-    	grafo.DFS("A");
-    	//grafo.BFStable();
-    	grafo.DFStable();
-    	
-    	
-    	Grafo<Character> g1=new Grafo<Character>(4), g2=new Grafo<Character>(3);
-    	
-    	g1.insert('B');
-    	g1.insert('C');
-    	g1.insert('D');
-    	
-    	g1.relation('C', 'B');
-    	g1.relation('C', 'D');
-    	g1.relation('B', 'D');
-    	
-    	
-    	g2.insert('A');
-    	g2.insert('B');
-    	g2.insert('D');
-    	g2.relation('B', 'D');
-    	System.out.println(g2.listaAdyacencia()+"\n");
-    	
-    	System.out.println(Grafo.grafoIncluido(g2, g1));
     }
 }
